@@ -1,0 +1,18 @@
+set_battery_changed_date:
+  name: Set Battery Changed Date
+  description: "Updates the 'last changed' date for the battery of a specific entity."
+  fields:
+    entity_id:
+      name: Entity
+      description: "The entity_id of the battery sensor that has been changed."
+      required: true
+      example: "sensor.living_room_motion_sensor_battery"
+      selector:
+        entity:
+          device_class: battery
+    changed_at:
+      name: Changed At
+      description: "Optional: The specific date and time the battery was changed. If omitted, defaults to now."
+      example: "2025-10-26 14:30:00"
+      selector:
+        datetime:
