@@ -19,8 +19,8 @@ class BatteryTrackerCard extends HTMLElement {
       .no-entities { text-align: center; padding-top: 16px; }
       .area-header { margin: 16px 0 8px 0; font-size: 1.2em; font-weight: 500; border-bottom: 1px solid var(--divider-color); padding-bottom: 4px; }
       .battery-entity-row { display: flex; align-items: center; padding: 8px 0; gap: 16px; }
-      .icon-name { display: flex; align-items: center; flex: 1; gap: 16px; }
-      .name { font-weight: 500; }
+      .icon-name { display: flex; align-items: center; flex: 1; gap: 16px; min-width: 0; }
+      .name { font-weight: 500; word-break: break-word; }
       .state { width: 50px; text-align: right; }
       .last-changed { display: flex; flex-direction: column; align-items: flex-end; color: var(--secondary-text-color); font-size: 0.9em; }
       .last-changed .absolute-date { font-weight: 500; color: var(--primary-text-color); }
