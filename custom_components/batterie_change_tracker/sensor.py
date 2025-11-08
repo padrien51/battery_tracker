@@ -15,6 +15,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.components.sensor import SensorEntity, SensorDeviceClass
 from homeassistant.helpers import device_registry as dr, entity_registry as er
+from homeassistant.helpers.restore_state import RestoreEntity
 
 from .const import DOMAIN
 
@@ -92,7 +93,7 @@ class BatteryTracker:
             self.async_add_entities([BatteryLastChangedSensor(self.hass, entity_entry)])
 
 
-class BatteryLastChangedSensor(SensorEntity):
+class BatteryLastChangedSensor(SensorEntity, RestoreEntity):
     """Representation of a last battery change sensor."""
 
     _attr_has_entity_name = True
@@ -119,8 +120,17 @@ class BatteryLastChangedSensor(SensorEntity):
         )
 
     async def async_added_to_hass(self) -> None:
-        """Listen for our custom update event."""
+        """Listen for our custom update event and restore state."""
         await super().async_added_to_hass()
+
+        # Restore the last known state
+        last_state = await self.async_get_last_state()
+        if last_state and last_state.state not in ("unknown", "unavailable", "Non changée"):
+            try:
+                self.async_update_state(datetime.fromisoformat(last_state.state))
+            except (ValueError, TypeError):
+                _LOGGER.warning(f"Could not parse last state for {self.entity_id}: {last_state.state}")
+
 
         @callback
         def handle_update_event(event: Event):
