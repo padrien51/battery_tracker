@@ -111,12 +111,17 @@ class BatteryLastChangedSensor(SensorEntity, RestoreEntity):
         device_reg = dr.async_get(hass)
         parent_device = device_reg.async_get(parent_entity.device_id) if parent_entity.device_id else None
         
+        via_device = None
+        if parent_device and parent_device.via_device_id:
+            if device_reg.async_get(parent_device.via_device_id):
+                via_device = parent_device.via_device_id
+
         self._attr_device_info = DeviceInfo(
             identifiers=parent_device.identifiers if parent_device else {(DOMAIN, parent_entity.unique_id)},
             name=parent_device.name if parent_device else parent_entity.name or sanitized_parent_id,
             manufacturer=parent_device.manufacturer if parent_device else None,
             model=parent_device.model if parent_device else None,
-            via_device=parent_device.via_device_id if parent_device else None,
+            via_device=via_device,
         )
 
     async def async_added_to_hass(self) -> None:
