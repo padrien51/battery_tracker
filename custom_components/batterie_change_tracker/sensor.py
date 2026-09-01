@@ -74,6 +74,10 @@ class BatteryTracker:
         if not isinstance(entity_id, str) or not entity_id.startswith("sensor."):
             return
 
+        # Ignorer nos propres capteurs compagnons pour éviter une boucle infinie
+        if entity_id.endswith("_last_known_battery_level") or entity_id.endswith("_last_battery_change"):
+            return
+
         state = self.hass.states.get(entity_id)
         if not state:
             return
