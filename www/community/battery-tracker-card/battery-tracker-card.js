@@ -92,9 +92,13 @@ class BatteryTrackerCard extends HTMLElement {
         }
 
         if (!groups[areaName]) groups[areaName] = [];
+        const lastKnownLevelId = companionEntity.entity_id.replace("_last_battery_change", "_last_known_battery_level");
+        const lastKnownLevelState = hass.states[lastKnownLevelId];
+
         groups[areaName].push({
           name: originalState.attributes.friendly_name || originalId,
           battery_level: originalState.state,
+          last_known_battery_level: lastKnownLevelState ? lastKnownLevelState.state : null,
           last_changed_iso: companionEntity.state,
           original_entity_id: originalId,
         });
@@ -124,10 +128,14 @@ class BatteryTrackerCard extends HTMLElement {
         const row = document.createElement('div');
         row.className = 'battery-entity-row';
 
-        const { icon, color } = this._getBatteryIconAndColor(entity.battery_level);
+        // Use last known level for icon calculation if current is unavailable
+        const isUnavailable = entity.battery_level === 'unavailable' || entity.battery_level === 'unknown';
+        const levelForIcon = isUnavailable && entity.last_known_battery_level ? entity.last_known_battery_level : entity.battery_level;
+        
+        const { icon, color } = this._getBatteryIconAndColor(levelForIcon);
         const iconEl = document.createElement('ha-icon');
         iconEl.icon = icon;
-        iconEl.style.color = color;
+        iconEl.style.color = isUnavailable ? 'var(--state-disabled-color, #a0a0a0)' : color;
 
         const nameEl = document.createElement('div');
         nameEl.className = 'name';
@@ -140,7 +148,20 @@ class BatteryTrackerCard extends HTMLElement {
 
         const stateEl = document.createElement('div');
         stateEl.className = 'state';
-        stateEl.textContent = `${entity.battery_level}%`;
+        
+        if (isUnavailable) {
+            if (entity.last_known_battery_level && entity.last_known_battery_level !== 'unavailable' && entity.last_known_battery_level !== 'unknown') {
+                stateEl.textContent = `${entity.last_known_battery_level}%`;
+                stateEl.style.color = 'var(--warning-color, #ff9800)';
+                stateEl.title = 'Dernière valeur connue avant indisponibilité';
+                stateEl.style.fontWeight = 'bold';
+            } else {
+                stateEl.textContent = entity.battery_level === 'unavailable' ? 'Indisp.' : 'Inconnu';
+                stateEl.style.color = 'var(--state-disabled-color, #a0a0a0)';
+            }
+        } else {
+            stateEl.textContent = `${entity.battery_level}%`;
+        }
 
         const lastChangedEl = document.createElement('div');
         lastChangedEl.className = 'last-changed';

@@ -90,7 +90,10 @@ class BatteryTracker:
                 return
 
             self.tracked_entities.add(entity_id)
-            self.async_add_entities([BatteryLastChangedSensor(self.hass, entity_entry)])
+            self.async_add_entities([
+                BatteryLastChangedSensor(self.hass, entity_entry),
+                BatteryLastKnownLevelSensor(self.hass, entity_entry),
+            ])
 
 
 class BatteryLastChangedSensor(SensorEntity, RestoreEntity):
@@ -162,3 +165,75 @@ class BatteryLastChangedSensor(SensorEntity, RestoreEntity):
         self._attr_device_class = SensorDeviceClass.TIMESTAMP
         self._attr_native_value = new_datetime
         self.async_write_ha_state()
+
+
+class BatteryLastKnownLevelSensor(SensorEntity, RestoreEntity):
+    """Representation of a sensor tracking the last known battery level."""
+
+    _attr_has_entity_name = True
+    _attr_device_class = SensorDeviceClass.BATTERY
+    _attr_native_unit_of_measurement = "%"
+
+    def __init__(self, hass: HomeAssistant, parent_entity: er.RegistryEntry) -> None:
+        """Initialize the sensor."""
+        self.hass = hass
+        self._parent_entity = parent_entity
+        self._attr_unique_id = f"{parent_entity.unique_id}-last-known-battery-level"
+        sanitized_parent_id = parent_entity.entity_id.split(".")[-1]
+        self.entity_id = f"sensor.{sanitized_parent_id}_last_known_battery_level"
+        self._attr_native_value = None
+
+        device_reg = dr.async_get(hass)
+        parent_device = device_reg.async_get(parent_entity.device_id) if parent_entity.device_id else None
+
+        if parent_device:
+            self._attr_device_info = DeviceInfo(
+                identifiers=parent_device.identifiers,
+            )
+        else:
+            self._attr_device_info = DeviceInfo(
+                identifiers={(DOMAIN, parent_entity.unique_id)},
+                name=parent_entity.name or sanitized_parent_id,
+            )
+
+    async def async_added_to_hass(self) -> None:
+        """Listen for state changes of the parent sensor."""
+        await super().async_added_to_hass()
+        from homeassistant.helpers.event import async_track_state_change_event
+
+        # Restore the last known state
+        last_state = await self.async_get_last_state()
+        if last_state and last_state.state not in ("unknown", "unavailable"):
+            try:
+                self._attr_native_value = float(last_state.state)
+            except ValueError:
+                pass
+
+        # Check current state of parent entity
+        parent_state = self.hass.states.get(self._parent_entity.entity_id)
+        if parent_state and parent_state.state not in ("unknown", "unavailable"):
+            try:
+                self._attr_native_value = float(parent_state.state)
+            except ValueError:
+                pass
+
+        @callback
+        def async_parent_state_changed(event: Event) -> None:
+            """Handle parent state changes."""
+            new_state = event.data.get("new_state")
+            if new_state and new_state.state not in ("unknown", "unavailable"):
+                try:
+                    self._attr_native_value = float(new_state.state)
+                    self.async_write_ha_state()
+                except ValueError:
+                    pass
+
+        self.async_on_remove(
+            async_track_state_change_event(
+                self.hass, [self._parent_entity.entity_id], async_parent_state_changed
+            )
+        )
+
+    @property
+    def name(self) -> str:
+        return "Last known battery level"
