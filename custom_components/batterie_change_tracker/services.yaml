@@ -16,3 +16,7 @@ set_battery_changed_date:
       example: "2025-10-26 14:30:00"
       selector:
         datetime:
+
+cleanup_duplicates:
+  name: Cleanup Duplicates
+  description: "Nettoie les entités dupliquées (suite au bug de la boucle infinie) de la base de données Home Assistant."

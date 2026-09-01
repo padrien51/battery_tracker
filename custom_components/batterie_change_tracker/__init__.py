@@ -60,8 +60,26 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             )
 
     hass.services.async_register(DOMAIN, "set_battery_changed_date", handle_set_battery_changed_date)
+    
+    async def handle_cleanup_duplicates(call: ServiceCall):
+        """Temporary service to clean up duplicated entities."""
+        entities_to_remove = []
+        for entity in ent_reg.entities.values():
+            if entity.platform == DOMAIN:
+                if "_last_known_battery_level_last_" in entity.entity_id:
+                    entities_to_remove.append(entity.entity_id)
+        
+        for entity_id in entities_to_remove:
+            ent_reg.async_remove(entity_id)
+            _LOGGER.info(f"Removed duplicated entity: {entity_id}")
+
+    hass.services.async_register(DOMAIN, "cleanup_duplicates", handle_cleanup_duplicates)
+
     entry.async_on_unload(
         lambda: hass.services.async_remove(DOMAIN, "set_battery_changed_date")
+    )
+    entry.async_on_unload(
+        lambda: hass.services.async_remove(DOMAIN, "cleanup_duplicates")
     )
 
     await hass.config_entries.async_forward_entry_setups(entry, ["sensor"])
