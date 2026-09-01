@@ -44,6 +44,8 @@ class BatteryTrackerCard extends HTMLElement {
       }
       .battery-entity-row {
         display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
         align-items: center;
         padding: 12px 0;
         gap: 12px;
@@ -55,9 +57,9 @@ class BatteryTrackerCard extends HTMLElement {
       .icon-name {
         display: flex;
         align-items: center;
-        flex: 1;
+        flex: 1 1 150px;
         gap: 12px;
-        min-width: 0;
+        min-width: 150px;
       }
       ha-icon {
         --mdc-icon-size: 24px;
@@ -69,9 +71,16 @@ class BatteryTrackerCard extends HTMLElement {
       }
       .name {
         font-weight: 500;
-        word-break: break-word;
         color: var(--primary-text-color);
         line-height: 1.2;
+      }
+      .controls-container {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        flex: 1 0 auto;
+        justify-content: flex-end;
       }
       .state-badge {
         font-weight: 500;
@@ -296,10 +305,14 @@ class BatteryTrackerCard extends HTMLElement {
         buttonEl.textContent = 'CHANGÉE';
         buttonEl.addEventListener('click', () => this._openDatePicker(entity));
 
+        const controlsContainer = document.createElement('div');
+        controlsContainer.className = 'controls-container';
+        controlsContainer.appendChild(stateEl);
+        controlsContainer.appendChild(lastChangedEl);
+        controlsContainer.appendChild(buttonEl);
+
         row.appendChild(iconNameContainer);
-        row.appendChild(stateEl);
-        row.appendChild(lastChangedEl);
-        row.appendChild(buttonEl);
+        row.appendChild(controlsContainer);
         areaGroup.appendChild(row);
       });
       
