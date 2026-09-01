@@ -21,7 +21,7 @@ class BatteryTrackerCard extends HTMLElement {
       .card-content {
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: 16px;
       }
       .no-entities {
         text-align: center;
@@ -30,60 +30,58 @@ class BatteryTrackerCard extends HTMLElement {
         font-style: italic;
       }
       .area-group {
-        background: var(--secondary-background-color, rgba(120, 120, 120, 0.05));
-        border-radius: 12px;
-        padding: 12px 16px;
-        margin-bottom: 8px;
+        border: 1px solid var(--divider-color, rgba(0,0,0,0.12));
+        border-radius: 8px;
+        padding: 0 16px;
       }
       .area-header {
-        margin: 0 0 12px 0;
+        margin: 16px 0 8px 0;
         font-size: 1.1em;
         font-weight: 500;
-        color: var(--primary-color);
-        border-bottom: 2px solid var(--divider-color, rgba(0, 0, 0, 0.1));
-        padding-bottom: 6px;
+        color: var(--primary-text-color);
+        border-bottom: 1px solid var(--divider-color, rgba(0, 0, 0, 0.12));
+        padding-bottom: 8px;
       }
       .battery-entity-row {
         display: flex;
         align-items: center;
-        padding: 10px 0;
-        gap: 16px;
+        padding: 12px 0;
+        gap: 12px;
         border-bottom: 1px solid var(--divider-color, rgba(0,0,0,0.05));
       }
       .battery-entity-row:last-child {
         border-bottom: none;
-        padding-bottom: 0;
       }
       .icon-name {
         display: flex;
         align-items: center;
         flex: 1;
-        gap: 16px;
+        gap: 12px;
         min-width: 0;
       }
       ha-icon {
         --mdc-icon-size: 24px;
+        flex-shrink: 0;
       }
       .name-container {
         display: flex;
         flex-direction: column;
-        overflow: hidden;
       }
       .name {
         font-weight: 500;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        word-break: break-word;
         color: var(--primary-text-color);
+        line-height: 1.2;
       }
       .state-badge {
-        font-weight: bold;
+        font-weight: 500;
         font-size: 0.9em;
-        background: var(--secondary-background-color);
-        padding: 4px 8px;
-        border-radius: 12px;
-        min-width: 45px;
+        background: rgba(150, 150, 150, 0.1);
+        padding: 4px 10px;
+        border-radius: 16px;
+        min-width: 40px;
         text-align: center;
+        color: var(--primary-text-color);
       }
       .last-changed {
         display: flex;
@@ -96,8 +94,37 @@ class BatteryTrackerCard extends HTMLElement {
       .last-changed .absolute-date {
         color: var(--primary-text-color);
       }
-      mwc-button {
-        --mdc-theme-primary: var(--primary-color);
+      
+      /* Modern button style */
+      .action-button {
+        background-color: transparent;
+        color: var(--primary-color);
+        border: 1px solid var(--primary-color);
+        padding: 6px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        transition: background-color 0.2s, color 0.2s;
+        text-transform: uppercase;
+      }
+      .action-button:hover {
+        background-color: rgba(var(--rgb-primary-color, 3, 169, 244), 0.1);
+      }
+      .action-button.confirm-button {
+        background-color: var(--primary-color);
+        color: var(--text-primary-color, white);
+        border: none;
+      }
+      .action-button.confirm-button:hover {
+        opacity: 0.9;
+      }
+      .action-button.cancel-button {
+        border: none;
+        color: var(--secondary-text-color);
+      }
+      .action-button.cancel-button:hover {
+        background-color: rgba(150, 150, 150, 0.1);
       }
 
       /* Dialog styles */
@@ -117,8 +144,8 @@ class BatteryTrackerCard extends HTMLElement {
         <h3>Date de remplacement</h3>
         <input type="date" />
         <div class="dialog-actions">
-            <mwc-button class="cancel-button" label="Annuler"></mwc-button>
-            <mwc-button class="confirm-button" unelevated label="Confirmer"></mwc-button>
+            <button class="action-button cancel-button">Annuler</button>
+            <button class="action-button confirm-button">Confirmer</button>
         </div>
     `;
     dialogOverlay.appendChild(dialogContent);
@@ -264,9 +291,9 @@ class BatteryTrackerCard extends HTMLElement {
             lastChangedEl.appendChild(relativeDate);
         }
 
-        const buttonEl = document.createElement('mwc-button');
-        buttonEl.setAttribute('outlined', '');
-        buttonEl.label = 'Changée';
+        const buttonEl = document.createElement('button');
+        buttonEl.className = 'action-button';
+        buttonEl.textContent = 'CHANGÉE';
         buttonEl.addEventListener('click', () => this._openDatePicker(entity));
 
         row.appendChild(iconNameContainer);
