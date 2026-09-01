@@ -15,23 +15,98 @@ class BatteryTrackerCard extends HTMLElement {
     content.className = 'card-content';
 
     style.textContent = `
-      .card-content { padding: 0 16px 16px; }
-      .no-entities { text-align: center; padding-top: 16px; }
-      .area-header { margin: 16px 0 8px 0; font-size: 1.2em; font-weight: 500; border-bottom: 1px solid var(--divider-color); padding-bottom: 4px; }
-      .battery-entity-row { display: flex; align-items: center; padding: 8px 0; gap: 16px; }
-      .icon-name { display: flex; align-items: center; flex: 1; gap: 16px; min-width: 0; }
-      .name { font-weight: 500; word-break: break-word; }
-      .state { width: 50px; text-align: right; }
-      .last-changed { display: flex; flex-direction: column; align-items: flex-end; color: var(--secondary-text-color); font-size: 0.9em; }
-      .last-changed .absolute-date { font-weight: 500; color: var(--primary-text-color); }
-      .action-button { background-color: var(--primary-color); color: var(--text-primary-color, white); border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; }
+      ha-card {
+        padding: 16px;
+      }
+      .card-content {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .no-entities {
+        text-align: center;
+        padding: 24px;
+        color: var(--secondary-text-color);
+        font-style: italic;
+      }
+      .area-group {
+        background: var(--secondary-background-color, rgba(120, 120, 120, 0.05));
+        border-radius: 12px;
+        padding: 12px 16px;
+        margin-bottom: 8px;
+      }
+      .area-header {
+        margin: 0 0 12px 0;
+        font-size: 1.1em;
+        font-weight: 500;
+        color: var(--primary-color);
+        border-bottom: 2px solid var(--divider-color, rgba(0, 0, 0, 0.1));
+        padding-bottom: 6px;
+      }
+      .battery-entity-row {
+        display: flex;
+        align-items: center;
+        padding: 10px 0;
+        gap: 16px;
+        border-bottom: 1px solid var(--divider-color, rgba(0,0,0,0.05));
+      }
+      .battery-entity-row:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+      }
+      .icon-name {
+        display: flex;
+        align-items: center;
+        flex: 1;
+        gap: 16px;
+        min-width: 0;
+      }
+      ha-icon {
+        --mdc-icon-size: 24px;
+      }
+      .name-container {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+      .name {
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: var(--primary-text-color);
+      }
+      .state-badge {
+        font-weight: bold;
+        font-size: 0.9em;
+        background: var(--secondary-background-color);
+        padding: 4px 8px;
+        border-radius: 12px;
+        min-width: 45px;
+        text-align: center;
+      }
+      .last-changed {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        color: var(--secondary-text-color);
+        font-size: 0.85em;
+        min-width: 90px;
+      }
+      .last-changed .absolute-date {
+        color: var(--primary-text-color);
+      }
+      mwc-button {
+        --mdc-theme-primary: var(--primary-color);
+      }
 
       /* Dialog styles */
-      .dialog-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 10; }
-      .dialog-content { background-color: var(--card-background-color, white); padding: 20px; border-radius: 8px; text-align: center; }
-      .dialog-content h3 { margin-top: 0; }
-      .dialog-content input[type="date"] { width: 100%; padding: 8px; margin: 16px 0; box-sizing: border-box; border: 1px solid var(--divider-color); border-radius: 4px; }
-      .dialog-actions { display: flex; justify-content: flex-end; gap: 8px; }
+      .dialog-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(2px); }
+      .dialog-content { background-color: var(--card-background-color, white); padding: 24px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center; max-width: 300px; width: 100%; }
+      .dialog-content h3 { margin-top: 0; font-weight: 400; color: var(--primary-text-color); }
+      .dialog-content input[type="date"] { width: 100%; padding: 10px; margin: 16px 0; font-size: 16px; color: var(--primary-text-color); background: var(--secondary-background-color); border: 1px solid var(--divider-color); border-radius: 8px; outline: none; }
+      .dialog-content input[type="date"]:focus { border-color: var(--primary-color); }
+      .dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
     `;
 
     const dialogOverlay = document.createElement('div');
@@ -39,11 +114,11 @@ class BatteryTrackerCard extends HTMLElement {
     const dialogContent = document.createElement('div');
     dialogContent.className = 'dialog-content';
     dialogContent.innerHTML = `
-        <h3>Quand la pile a-t-elle été changée ?</h3>
+        <h3>Date de remplacement</h3>
         <input type="date" />
         <div class="dialog-actions">
-            <button class="action-button cancel-button">Annuler</button>
-            <button class="action-button confirm-button">Confirmer</button>
+            <mwc-button class="cancel-button" label="Annuler"></mwc-button>
+            <mwc-button class="confirm-button" unelevated label="Confirmer"></mwc-button>
         </div>
     `;
     dialogOverlay.appendChild(dialogContent);
@@ -119,10 +194,13 @@ class BatteryTrackerCard extends HTMLElement {
     }
 
     sortedAreaNames.forEach(areaName => {
+      const areaGroup = document.createElement('div');
+      areaGroup.className = 'area-group';
+
       const areaHeader = document.createElement('h3');
       areaHeader.className = 'area-header';
       areaHeader.textContent = areaName;
-      content.appendChild(areaHeader);
+      areaGroup.appendChild(areaHeader);
 
       groups[areaName].forEach(entity => {
         const row = document.createElement('div');
@@ -137,24 +215,28 @@ class BatteryTrackerCard extends HTMLElement {
         iconEl.icon = icon;
         iconEl.style.color = isUnavailable ? 'var(--state-disabled-color, #a0a0a0)' : color;
 
+        const nameContainerEl = document.createElement('div');
+        nameContainerEl.className = 'name-container';
+
         const nameEl = document.createElement('div');
         nameEl.className = 'name';
         nameEl.textContent = entity.name;
+        nameContainerEl.appendChild(nameEl);
 
         const iconNameContainer = document.createElement('div');
         iconNameContainer.className = 'icon-name';
         iconNameContainer.appendChild(iconEl);
-        iconNameContainer.appendChild(nameEl);
+        iconNameContainer.appendChild(nameContainerEl);
 
         const stateEl = document.createElement('div');
-        stateEl.className = 'state';
+        stateEl.className = 'state-badge';
         
         if (isUnavailable) {
             if (entity.last_known_battery_level && entity.last_known_battery_level !== 'unavailable' && entity.last_known_battery_level !== 'unknown') {
                 stateEl.textContent = `${entity.last_known_battery_level}%`;
                 stateEl.style.color = 'var(--warning-color, #ff9800)';
                 stateEl.title = 'Dernière valeur connue avant indisponibilité';
-                stateEl.style.fontWeight = 'bold';
+                stateEl.style.background = 'rgba(255, 152, 0, 0.1)';
             } else {
                 stateEl.textContent = entity.battery_level === 'unavailable' ? 'Indisp.' : 'Inconnu';
                 stateEl.style.color = 'var(--state-disabled-color, #a0a0a0)';
@@ -182,17 +264,19 @@ class BatteryTrackerCard extends HTMLElement {
             lastChangedEl.appendChild(relativeDate);
         }
 
-        const buttonEl = document.createElement('button');
-        buttonEl.className = 'action-button';
-        buttonEl.textContent = 'Changée';
+        const buttonEl = document.createElement('mwc-button');
+        buttonEl.setAttribute('outlined', '');
+        buttonEl.label = 'Changée';
         buttonEl.addEventListener('click', () => this._openDatePicker(entity));
 
         row.appendChild(iconNameContainer);
         row.appendChild(stateEl);
         row.appendChild(lastChangedEl);
         row.appendChild(buttonEl);
-        content.appendChild(row);
+        areaGroup.appendChild(row);
       });
+      
+      content.appendChild(areaGroup);
     });
   }
 
